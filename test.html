@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>심리 테스트</title>
     <style>
         body {
@@ -13,8 +13,10 @@
             min-height: 100vh;
             margin: 0;
             background-color: #f4f7fa;
-            padding: 20px 20px 150px; /* 키보드 공간 확보 */
+            padding: 20px 20px 150px;
             justify-content: flex-start;
+            overflow: hidden; /* 스크롤 방지 */
+            touch-action: pan-x pan-y; /* 줌 제스처 제한 */
         }
         #start, #restart {
             padding: 12px 24px;
@@ -48,6 +50,7 @@
             color: #1e90ff;
             width: 90%;
             max-width: 600px;
+            font-weight: 600; /* 가독성 강화 */
         }
         #hint {
             width: 90%;
@@ -363,6 +366,14 @@
             }
         });
 
+        // 스크롤 최상단 고정
+        function keepScrollAtTop() {
+            window.scrollTo(0, 0);
+        }
+        window.addEventListener('scroll', keepScrollAtTop);
+        window.addEventListener('resize', keepScrollAtTop);
+        input.addEventListener('focus', keepScrollAtTop);
+
         function startTest() {
             questions = generateQuestions();
             currentQuestionIndex = 0;
@@ -386,6 +397,7 @@
             wordCenter.style.opacity = '1';
             wordRight.style.opacity = '1';
             canSubmit = false;
+            document.body.style.overflow = 'hidden'; // 테스트 중 스크롤 방지
             showQuestion();
         }
 
@@ -416,6 +428,7 @@
                 wordCenter.style.opacity = '1';
                 wordRight.style.opacity = '1';
             }
+            keepScrollAtTop();
             const question = questions[currentQuestionIndex];
             showCountdown(question.word);
         }
@@ -431,10 +444,12 @@
 
             let count = 3;
             countdownDiv.innerText = count;
+            keepScrollAtTop();
             const interval = setInterval(() => {
                 count--;
                 if (count > 0) {
                     countdownDiv.innerText = count;
+                    keepScrollAtTop();
                 } else {
                     clearInterval(interval);
                     countdownDiv.innerText = '';
@@ -460,8 +475,8 @@
                     hintRight.innerText = '';
                     input.style.opacity = '1';
                     input.focus();
-                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     canSubmit = true;
+                    keepScrollAtTop();
                     console.log('Word cleared');
                 }, 30);
             });
@@ -486,6 +501,7 @@
             hintDiv.style.display = 'none';
             wordLeft.parentElement.style.display = 'none';
             resultDiv.style.display = 'block';
+            document.body.style.overflow = 'auto'; // 결과 화면에서 스크롤 허용
 
             let maxCategory = '';
             let maxCount = 0;
@@ -524,6 +540,7 @@
             });
 
             interpretationDiv.innerText = `당신이 가장 잘 맞춘 카테고리는 '${resultText}'입니다. 이는 당신이 ${resultText}에 대한 결핍을 느낄 수 있음을 시사합니다. (참고: 이 테스트는 재미용입니다.)`;
+            keepScrollAtTop();
         }
     </script>
 </body>
