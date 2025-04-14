@@ -73,16 +73,18 @@
             border: 1px solid #d1d5db;
             border-radius: 8px;
             margin: 20px 0;
-            padding-left: 30px; /* 요청: 30px */
-            padding-right: 30px; /* 요청: 30px */
+            padding-left: 10px;
+            padding-right: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        #word {
-            font-size: clamp(1.2rem, 4vw, 1.4rem);
-            width: 100%;
+        .word-section {
+            flex: 1;
+            text-align: center;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            color: #333;
             opacity: 1;
             visibility: visible;
-            color: #333;
+            padding: 0 5px;
         }
         #input-container {
             display: flex;
@@ -123,6 +125,9 @@
             color: #555;
             margin-top: 20px;
         }
+        #progress.prep {
+            color: #2ecc71; /* 예비 문제 색상 */
+        }
         #result {
             display: none;
             text-align: center;
@@ -146,7 +151,7 @@
             border-left: 2px solid #333;
         }
         .bar {
-            width: 40px;
+            width: 48px;
             background-color: #1e90ff;
             position: relative;
             display: flex;
@@ -157,7 +162,6 @@
         .bar:nth-child(2) { background-color: #2ecc71; }
         .bar:nth-child(3) { background-color: #e74c3c; }
         .bar:nth-child(4) { background-color: #f1c40f; }
-        .bar:nth-child(5) { background-color: #9b59b6; }
         .bar-label {
             position: absolute;
             bottom: -24px;
@@ -196,6 +200,9 @@
                 max-width: 400px;
                 text-align: center;
             }
+            .word-section {
+                font-size: clamp(1rem, 3vw, 1.2rem);
+            }
         }
     </style>
 </head>
@@ -209,7 +216,9 @@
         <span class="hint-arrow" id="hint-right"></span>
     </div>
     <div id="word-container">
-        <div id="word"></div>
+        <div class="word-section" id="word-left"></div>
+        <div class="word-section" id="word-center"></div>
+        <div class="word-section" id="word-right"></div>
     </div>
     <div id="input-container">
         <input type="text" id="input" placeholder="단어 입력 후, enter">
@@ -259,11 +268,23 @@
 
         function generateQuestions() {
             const questions = [];
-            const categories = ['relationship', 'success', 'money', 'food', 'health'];
+            // 예비 문제: food 단어 2개
+            const foodWords = words.food;
+            const prepWords = [];
+            while (prepWords.length < 2) {
+                const randomIndex = Math.floor(Math.random() * foodWords.length);
+                const word = foodWords[randomIndex];
+                if (!prepWords.includes(word)) {
+                    prepWords.push(word);
+                    questions.push({ word, category: 'food', isPrep: true });
+                }
+            }
+            // 본 문제: 4개 주제 × 4문제
+            const categories = ['relationship', 'success', 'money', 'health'];
             categories.forEach(category => {
                 const categoryWords = words[category];
                 const selectedWords = [];
-                while (selectedWords.length < 6) {
+                while (selectedWords.length < 4) {
                     const randomIndex = Math.floor(Math.random() * categoryWords.length);
                     const word = categoryWords[randomIndex];
                     if (!selectedWords.includes(word)) {
@@ -271,11 +292,12 @@
                     }
                 }
                 selectedWords.forEach(word => {
-                    questions.push({ word, category });
+                    questions.push({ word, category, isPrep: false });
                 });
             });
-            for (let i = questions.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
+            // 셔플
+            for (let i = questions.length - 1; i > 2; i--) {
+                const j = Math.floor(Math.random() * (i - 1)) + 2;
                 [questions[i], questions[j]] = [questions[j], questions[i]];
             }
             return questions;
@@ -287,7 +309,6 @@
             relationship: 0,
             success: 0,
             money: 0,
-            food: 0,
             health: 0
         };
         let canSubmit = false;
@@ -300,7 +321,9 @@
         const hintLeft = document.getElementById('hint-left');
         const hintCenter = document.getElementById('hint-center');
         const hintRight = document.getElementById('hint-right');
-        const wordDiv = document.getElementById('word');
+        const wordLeft = document.getElementById('word-left');
+        const wordCenter = document.getElementById('word-center');
+        const wordRight = document.getElementById('word-right');
         const input = document.getElementById('input');
         const oxDiv = document.getElementById('ox');
         const progressDiv = document.getElementById('progress');
@@ -315,7 +338,7 @@
         function startTest() {
             questions = generateQuestions();
             currentQuestionIndex = 0;
-            correctAnswers = { relationship: 0, success: 0, money: 0, food: 0, health: 0 };
+            correctAnswers = { relationship: 0, success: 0, money: 0, health: 0 };
             lastAnswerCorrect = null;
             startButton.style.display = 'none';
             introDiv.style.display = 'none';
@@ -324,12 +347,16 @@
             progressDiv.style.display = 'block';
             countdownDiv.style.display = 'block';
             hintDiv.style.display = 'flex';
-            wordDiv.parentElement.style.display = 'flex';
+            wordLeft.parentElement.style.display = 'flex';
             input.value = '';
             input.style.opacity = '0';
             oxDiv.innerText = '';
-            wordDiv.innerText = '';
-            wordDiv.style.opacity = '1';
+            wordLeft.innerText = '';
+            wordCenter.innerText = '';
+            wordRight.innerText = '';
+            wordLeft.style.opacity = '1';
+            wordCenter.style.opacity = '1';
+            wordRight.style.opacity = '1';
             canSubmit = false;
             showQuestion();
         }
@@ -339,7 +366,13 @@
                 showResult();
                 return;
             }
-            progressDiv.innerText = `${currentQuestionIndex + 1}/30`;
+            if (currentQuestionIndex < 2) {
+                progressDiv.innerText = `예비 문제 ${currentQuestionIndex + 1}`;
+                progressDiv.classList.add('prep');
+            } else {
+                progressDiv.innerText = `${currentQuestionIndex - 1}/16`;
+                progressDiv.classList.remove('prep');
+            }
             input.style.opacity = '0';
             input.value = '';
             canSubmit = false;
@@ -348,21 +381,25 @@
                 oxDiv.style.color = lastAnswerCorrect ? 'green' : 'red';
             } else {
                 oxDiv.innerText = '';
-                wordDiv.innerText = '';
-                wordDiv.style.opacity = '1';
+                wordLeft.innerText = '';
+                wordCenter.innerText = '';
+                wordRight.innerText = '';
+                wordLeft.style.opacity = '1';
+                wordCenter.style.opacity = '1';
+                wordRight.style.opacity = '1';
             }
             const question = questions[currentQuestionIndex];
             showCountdown(question.word);
         }
 
         function showCountdown(word) {
-            const alignments = ['left', 'center', 'right'];
-            const selectedAlignment = alignments[Math.floor(Math.random() * alignments.length)];
-            const otherAlignments = alignments.filter(align => align !== selectedAlignment);
-            const hintAlignments = [selectedAlignment, otherAlignments[Math.floor(Math.random() * otherAlignments.length)]];
-            hintLeft.innerText = hintAlignments.includes('left') ? '↓' : '';
-            hintCenter.innerText = hintAlignments.includes('center') ? '↓' : '';
-            hintRight.innerText = hintAlignments.includes('right') ? '↓' : '';
+            const sections = ['left', 'center', 'right'];
+            const selectedSection = sections[Math.floor(Math.random() * sections.length)];
+            const otherSections = sections.filter(s => s !== selectedSection);
+            const hintSections = [selectedSection, otherSections[Math.floor(Math.random() * otherSections.length)]];
+            hintLeft.innerText = hintSections.includes('left') ? '↓' : '';
+            hintCenter.innerText = hintSections.includes('center') ? '↓' : '';
+            hintRight.innerText = hintSections.includes('right') ? '↓' : '';
 
             let count = 3;
             countdownDiv.innerText = count;
@@ -373,20 +410,23 @@
                 } else {
                     clearInterval(interval);
                     countdownDiv.innerText = '';
-                    showWord(word, selectedAlignment);
+                    showWord(word, selectedSection);
                 }
             }, 1000);
         }
 
-        function showWord(word, alignment) {
-            wordDiv.style.textAlign = alignment;
-            wordDiv.style.opacity = '1';
-            wordDiv.innerText = word;
-            console.log(`Displaying word: ${word}`);
+        function showWord(word, section) {
+            wordLeft.innerText = '';
+            wordCenter.innerText = '';
+            wordRight.innerText = '';
+            const target = section === 'left' ? wordLeft : section === 'center' ? wordCenter : wordRight;
+            target.style.opacity = '1';
+            target.innerText = word;
+            console.log(`Displaying word: ${word} in ${section}`);
             requestAnimationFrame(() => {
                 setTimeout(() => {
-                    wordDiv.innerText = '';
-                    wordDiv.style.opacity = '1';
+                    target.innerText = '';
+                    target.style.opacity = '1';
                     hintLeft.innerText = '';
                     hintCenter.innerText = '';
                     hintRight.innerText = '';
@@ -408,7 +448,7 @@
             const userAnswer = input.value.trim();
             const correctAnswer = questions[currentQuestionIndex].word;
             lastAnswerCorrect = userAnswer === correctAnswer;
-            if (lastAnswerCorrect) {
+            if (lastAnswerCorrect && !questions[currentQuestionIndex].isPrep) {
                 const category = questions[currentQuestionIndex].category;
                 correctAnswers[category]++;
             }
@@ -421,7 +461,7 @@
             progressDiv.style.display = 'none';
             countdownDiv.style.display = 'none';
             hintDiv.style.display = 'none';
-            wordDiv.parentElement.style.display = 'none';
+            wordLeft.parentElement.style.display = 'none';
             resultDiv.style.display = 'block';
 
             let maxCategory = '';
@@ -438,7 +478,6 @@
                 case 'relationship': resultText = '타인과의 관계'; break;
                 case 'success': resultText = '성공'; break;
                 case 'money': resultText = '돈'; break;
-                case 'food': resultText = '음식'; break;
                 case 'health': resultText = '건강'; break;
             }
 
@@ -447,14 +486,13 @@
                 { key: 'relationship', label: '관계', count: correctAnswers.relationship },
                 { key: 'success', label: '성공', count: correctAnswers.success },
                 { key: 'money', label: '돈', count: correctAnswers.money },
-                { key: 'food', label: '음식', count: correctAnswers.food },
                 { key: 'health', label: '건강', count: correctAnswers.health }
             ];
 
             categories.forEach(category => {
                 const bar = document.createElement('div');
                 bar.className = 'bar';
-                bar.style.height = `${category.count * 30}px`;
+                bar.style.height = `${category.count * 40}px`;
                 bar.innerHTML = `
                     <span class="bar-value">${category.count}</span>
                     <span class="bar-label">${category.label}</span>
