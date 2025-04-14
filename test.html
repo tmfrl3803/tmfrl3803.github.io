@@ -5,104 +5,123 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>심리 테스트</title>
     <style>
+        :root {
+            font-size: 16px; /* 기본 폰트 크기 */
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
             background-color: #f0f0f0;
+            padding: 2vw;
         }
         #start {
-            padding: 10px 20px;
-            font-size: 18px;
+            padding: clamp(0.5rem, 2vw, 0.8rem) clamp(1rem, 4vw, 1.6rem);
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
             cursor: pointer;
-            margin-bottom: 20px;
+            margin-bottom: clamp(1rem, 3vw, 1.5rem);
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
         }
         #intro {
-            font-size: 18px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
             text-align: center;
-            margin: 20px 0;
-            min-height: 60px;
+            margin: clamp(1rem, 3vw, 1.5rem) 0;
+            min-height: clamp(2rem, 8vw, 4rem);
+            width: min(90vw, 500px);
         }
         #countdown {
-            font-size: 48px;
+            font-size: clamp(2rem, 8vw, 3rem);
             text-align: center;
-            min-height: 60px;
-            margin: 20px 0;
+            min-height: clamp(2rem, 8vw, 4rem);
+            margin: clamp(1rem, 3vw, 1.5rem) 0;
+            width: min(90vw, 500px);
         }
         #hint {
-            width: 300px;
-            height: 20px;
+            width: min(90vw, 500px);
+            height: clamp(1rem, 3vw, 1.5rem);
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            margin-bottom: clamp(0.2rem, 1vw, 0.5rem);
         }
         .hint-arrow {
-            font-size: 18px;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
             color: green;
             width: 33.33%;
             text-align: center;
         }
         #word-container {
-            width: 300px;
-            height: 50px;
+            width: min(90vw, 500px);
+            height: clamp(2.5rem, 8vw, 3.5rem);
             display: flex;
             align-items: center;
             background-color: #fff;
             border: 1px solid #ccc;
-            margin: 20px 0;
-            padding-left: 10px;
-            padding-right: 10px;
+            margin: clamp(1rem, 3vw, 1.5rem) 0;
+            padding-left: clamp(0.5rem, 2vw, 0.8rem);
+            padding-right: clamp(0.5rem, 2vw, 0.8rem);
         }
         #word {
-            font-size: 24px;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
             width: 100%;
         }
         #input-container {
             display: flex;
             align-items: center;
+            width: min(90vw, 500px);
         }
         #input {
-            width: 200px;
-            padding: 10px;
-            font-size: 16px;
-            margin-right: 10px;
+            width: min(60vw, 400px);
+            padding: clamp(0.5rem, 2vw, 0.8rem);
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            margin-right: clamp(0.5rem, 2vw, 0.8rem);
             opacity: 0;
             transition: opacity 0.3s;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
         #ox {
-            width: 20px;
-            height: 20px;
-            font-size: 16px;
-            line-height: 20px;
+            width: clamp(1rem, 3vw, 1.5rem);
+            height: clamp(1rem, 3vw, 1.5rem);
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            line-height: clamp(1rem, 3vw, 1.5rem);
             text-align: center;
         }
         #progress {
-            font-size: 18px;
-            margin: 10px 0;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin: clamp(0.5rem, 2vw, 0.8rem) 0;
         }
         #result {
             display: none;
             text-align: center;
+            width: min(90vw, 500px);
         }
         #result h2 {
-            margin-bottom: 20px;
+            font-size: clamp(1.5rem, 4vw, 1.8rem);
+            margin-bottom: clamp(1rem, 3vw, 1.5rem);
         }
         #chart {
             display: flex;
             justify-content: space-around;
             align-items: flex-end;
-            height: 200px;
-            width: 300px;
-            margin: 20px auto;
+            height: clamp(8rem, 30vw, 12rem);
+            width: min(90vw, 400px);
+            margin: clamp(1rem, 3vw, 1.5rem) auto;
             border-bottom: 2px solid #000;
             border-left: 2px solid #000;
         }
         .bar {
-            width: 40px;
+            width: clamp(1.5rem, 5vw, 2.5rem);
             background-color: #4CAF50;
             position: relative;
             display: flex;
@@ -111,13 +130,33 @@
         }
         .bar-label {
             position: absolute;
-            bottom: -20px;
-            font-size: 12px;
+            bottom: clamp(-1rem, -3vw, -1.5rem);
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
         }
         .bar-value {
             position: absolute;
-            top: -20px;
-            font-size: 12px;
+            top: clamp(-1rem, -3vw, -1.5rem);
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 4vw;
+            }
+            #start {
+                width: min(80vw, 400px);
+            }
+            #input-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            #input {
+                width: min(80vw, 400px);
+                margin-right: 0;
+                margin-bottom: clamp(0.5rem, 2vw, 0.8rem);
+            }
+            #ox {
+                align-self: center;
+            }
         }
     </style>
 </head>
@@ -146,7 +185,6 @@
     </div>
 
     <script>
-        // 주제별 단어 목록 (각 주제당 20개, 총 100개)
         const words = {
             relationship: [
                 '친구', '가족', '사랑', '외로움', '소통', 
@@ -180,12 +218,9 @@
             ]
         };
 
-        // 문제 생성 함수
         function generateQuestions() {
             const questions = [];
             const categories = ['relationship', 'success', 'money', 'food', 'health'];
-
-            // 각 주제에서 6개의 단어 랜덤 선택
             categories.forEach(category => {
                 const categoryWords = words[category];
                 const selectedWords = [];
@@ -200,17 +235,13 @@
                     questions.push({ word, category });
                 });
             });
-
-            // 문제 순서 섞기 (Fisher-Yates 알고리즘)
             for (let i = questions.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [questions[i], questions[j]] = [questions[j], questions[i]];
             }
-
             return questions;
         }
 
-        // 전역 변수
         let questions = [];
         let currentQuestionIndex = 0;
         let correctAnswers = {
@@ -223,7 +254,6 @@
         let canSubmit = false;
         let lastAnswerCorrect = null;
 
-        // DOM 요소
         const startButton = document.getElementById('start');
         const introDiv = document.getElementById('intro');
         const countdownDiv = document.getElementById('countdown');
@@ -240,7 +270,6 @@
         const interpretationDiv = document.getElementById('interpretation');
         const restartButton = document.getElementById('restart');
 
-        // 테스트 시작
         startButton.addEventListener('click', startTest);
         restartButton.addEventListener('click', startTest);
 
@@ -264,7 +293,6 @@
             showQuestion();
         }
 
-        // 문제 표시
         function showQuestion() {
             if (currentQuestionIndex >= questions.length) {
                 showResult();
@@ -274,7 +302,6 @@
             input.style.opacity = '0';
             input.value = '';
             canSubmit = false;
-            // OX 표시 업데이트
             if (currentQuestionIndex > 0) {
                 oxDiv.innerText = lastAnswerCorrect ? '○' : '✗';
                 oxDiv.style.color = lastAnswerCorrect ? 'green' : 'red';
@@ -285,9 +312,7 @@
             showCountdown(question.word);
         }
 
-        // 카운트다운 표시
         function showCountdown(word) {
-            // 힌트 화살표 표시
             const alignments = ['left', 'center', 'right'];
             const selectedAlignment = alignments[Math.floor(Math.random() * alignments.length)];
             const otherAlignments = alignments.filter(align => align !== selectedAlignment);
@@ -310,7 +335,6 @@
             }, 1000);
         }
 
-        // 단어 표시 (0.03초)
         function showWord(word, alignment) {
             wordDiv.style.textAlign = alignment;
             wordDiv.innerText = word;
@@ -322,17 +346,15 @@
                 input.style.opacity = '1';
                 input.focus();
                 canSubmit = true;
-            }, 30); // 0.03초
+            }, 30);
         }
 
-        // Enter 키로 답변 확인
         input.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' && canSubmit) {
                 checkAnswer();
             }
         });
 
-        // 답변 확인
         function checkAnswer() {
             const userAnswer = input.value.trim();
             const correctAnswer = questions[currentQuestionIndex].word;
@@ -345,7 +367,6 @@
             showQuestion();
         }
 
-        // 결과 표시
         function showResult() {
             input.style.display = 'none';
             progressDiv.style.display = 'none';
@@ -354,7 +375,6 @@
             wordDiv.parentElement.style.display = 'none';
             resultDiv.style.display = 'block';
 
-            // 가장 많이 맞춘 카테고리 찾기
             let maxCategory = '';
             let maxCount = 0;
             for (const category in correctAnswers) {
@@ -373,7 +393,6 @@
                 case 'health': resultText = '건강'; break;
             }
 
-            // 막대 그래프 생성
             chartDiv.innerHTML = '';
             const categories = [
                 { key: 'relationship', label: '관계', count: correctAnswers.relationship },
@@ -386,7 +405,7 @@
             categories.forEach(category => {
                 const bar = document.createElement('div');
                 bar.className = 'bar';
-                bar.style.height = `${category.count * 30}px`; // 1개당 30px 높이
+                bar.style.height = `${category.count * clamp(1.5rem, 5vw, 2rem)}`;
                 bar.innerHTML = `
                     <span class="bar-value">${category.count}</span>
                     <span class="bar-label">${category.label}</span>
@@ -394,7 +413,6 @@
                 chartDiv.appendChild(bar);
             });
 
-            // 결과 해석
             interpretationDiv.innerText = `당신이 가장 잘 맞춘 카테고리는 '${resultText}'입니다. 이는 당신이 ${resultText}에 대한 결핍을 느낄 수 있음을 시사합니다. (참고: 이 테스트는 재미용입니다.)`;
         }
     </script>
