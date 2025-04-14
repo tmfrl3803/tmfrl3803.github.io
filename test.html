@@ -6,113 +6,133 @@
     <title>심리 테스트</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #f4f7fa;
+            padding: 20px;
         }
-        #start {
-            padding: 10px 20px;
-            font-size: 18px;
+        #start, #restart {
+            padding: 12px 24px;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
             cursor: pointer;
-            margin-bottom: 20px;
             border: none;
-            background-color: #007BFF;
+            background-color: #1e90ff;
             color: white;
-            border-radius: 5px;
-            pointer-events: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.1s;
             position: relative;
             z-index: 100;
         }
+        #start:hover, #restart:hover {
+            background-color: #4682b4;
+            transform: scale(1.05);
+        }
         #intro {
-            font-size: 18px;
+            font-size: clamp(1rem, 3vw, 1.1rem);
             text-align: center;
             margin: 20px 0;
-            min-height: 60px;
+            color: #333;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
         }
         #countdown {
-            font-size: 48px;
+            font-size: clamp(2rem, 8vw, 2.5rem);
             text-align: center;
-            min-height: 60px;
             margin: 20px 0;
+            color: #1e90ff;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
         }
         #hint {
             width: 90%;
-            max-width: 500px;
-            height: 20px;
+            max-width: 600px;
+            height: 24px;
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         .hint-arrow {
-            font-size: 18px;
-            color: green;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            color: #2ecc71;
             width: 33.33%;
             text-align: center;
         }
         #word-container {
             width: 90%;
-            max-width: 500px;
-            height: 50px;
+            max-width: 600px;
+            height: 60px;
             display: flex;
             align-items: center;
-            background-color: #fff;
-            border: 1px solid #ccc;
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
             margin: 20px 0;
-            padding-left: 15px; /* 여백 증가 */
-            padding-right: 15px; /* 여백 증가 */
+            padding-left: 30px; /* 요청: 30px */
+            padding-right: 30px; /* 요청: 30px */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         #word {
-            font-size: 24px;
+            font-size: clamp(1.2rem, 4vw, 1.4rem);
             width: 100%;
             opacity: 1;
             visibility: visible;
+            color: #333;
         }
         #input-container {
             display: flex;
             align-items: center;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
         }
         #input {
             width: 70%;
-            max-width: 400px;
+            max-width: 450px;
             padding: 10px;
-            font-size: 16px;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
             margin-right: 10px;
             opacity: 0;
             transition: opacity 0.3s;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: #ffffff;
+        }
+        #input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #1e90ff;
         }
         #ox {
-            width: 20px;
-            height: 20px;
-            font-size: 16px;
-            line-height: 20px;
+            width: 24px;
+            height: 24px;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            line-height: 24px;
             text-align: center;
+            color: #333;
         }
         #progress {
-            font-size: 18px;
-            margin: 10px 0;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            color: #555;
+            margin-top: 20px;
         }
         #result {
             display: none;
             text-align: center;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
         }
         #result h2 {
-            font-size: 24px;
+            font-size: clamp(1.4rem, 4vw, 1.6rem);
             margin-bottom: 20px;
+            color: #333;
         }
         #chart {
             display: flex;
@@ -120,34 +140,41 @@
             align-items: flex-end;
             height: 200px;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             margin: 20px auto;
-            border-bottom: 2px solid #000;
-            border-left: 2px solid #000;
+            border-bottom: 2px solid #333;
+            border-left: 2px solid #333;
         }
         .bar {
             width: 40px;
-            background-color: #4CAF50;
+            background-color: #1e90ff;
             position: relative;
             display: flex;
             align-items: flex-end;
             justify-content: center;
+            transition: height 0.5s ease-out;
         }
+        .bar:nth-child(2) { background-color: #2ecc71; }
+        .bar:nth-child(3) { background-color: #e74c3c; }
+        .bar:nth-child(4) { background-color: #f1c40f; }
+        .bar:nth-child(5) { background-color: #9b59b6; }
         .bar-label {
             position: absolute;
-            bottom: -20px;
-            font-size: 12px;
+            bottom: -24px;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            color: #333;
         }
         .bar-value {
             position: absolute;
-            top: -20px;
-            font-size: 12px;
+            top: -24px;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            color: #333;
         }
         @media (max-width: 600px) {
             body {
-                padding: 10px;
+                padding: 15px;
             }
-            #start {
+            #start, #restart {
                 width: 90%;
                 max-width: 400px;
             }
@@ -164,13 +191,17 @@
             #ox {
                 margin-top: 5px;
             }
+            #progress {
+                width: 90%;
+                max-width: 400px;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
     <button id="start">시작</button>
     <div id="intro">↓ 아래 네모칸에 0.03초 동안 나오는 단어를 맞춰보세요!</div>
-    <div id="progress"></div>
     <div id="countdown"></div>
     <div id="hint">
         <span class="hint-arrow" id="hint-left"></span>
@@ -190,6 +221,7 @@
         <p id="interpretation"></p>
         <button id="restart">다시 시작</button>
     </div>
+    <div id="progress"></div>
 
     <script>
         const words = {
@@ -296,8 +328,8 @@
             input.value = '';
             input.style.opacity = '0';
             oxDiv.innerText = '';
-            wordDiv.innerText = ''; // 단어 초기화
-            wordDiv.style.opacity = '1'; // 표시 보장
+            wordDiv.innerText = '';
+            wordDiv.style.opacity = '1';
             canSubmit = false;
             showQuestion();
         }
@@ -316,7 +348,7 @@
                 oxDiv.style.color = lastAnswerCorrect ? 'green' : 'red';
             } else {
                 oxDiv.innerText = '';
-                wordDiv.innerText = ''; // 첫 문제 초기화
+                wordDiv.innerText = '';
                 wordDiv.style.opacity = '1';
             }
             const question = questions[currentQuestionIndex];
@@ -350,7 +382,7 @@
             wordDiv.style.textAlign = alignment;
             wordDiv.style.opacity = '1';
             wordDiv.innerText = word;
-            console.log(`Displaying word: ${word}`); // 디버깅
+            console.log(`Displaying word: ${word}`);
             requestAnimationFrame(() => {
                 setTimeout(() => {
                     wordDiv.innerText = '';
@@ -361,7 +393,7 @@
                     input.style.opacity = '1';
                     input.focus();
                     canSubmit = true;
-                    console.log('Word cleared'); // 디버깅
+                    console.log('Word cleared');
                 }, 30);
             });
         }
