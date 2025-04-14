@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>버튼 테스트</title>
+</head>
+<body>
+    <button id="start">시작</button>
+    <script>
+        const startButton = document.getElementById('start');
+        startButton.addEventListener('click', () => {
+            alert('버튼 클릭됨!');
+            console.log('Start clicked');
+        });
+    </script>
+</body>
+</html>
