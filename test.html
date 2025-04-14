@@ -24,7 +24,9 @@
             background-color: #007BFF;
             color: white;
             border-radius: 5px;
-            pointer-events: auto; /* 클릭 보장 */
+            pointer-events: auto;
+            position: relative;
+            z-index: 100;
         }
         #intro {
             font-size: 18px;
@@ -65,12 +67,14 @@
             background-color: #fff;
             border: 1px solid #ccc;
             margin: 20px 0;
-            padding-left: 10px;
-            padding-right: 10px;
+            padding-left: 15px; /* 여백 증가 */
+            padding-right: 15px; /* 여백 증가 */
         }
         #word {
             font-size: 24px;
             width: 100%;
+            opacity: 1;
+            visibility: visible;
         }
         #input-container {
             display: flex;
@@ -292,6 +296,8 @@
             input.value = '';
             input.style.opacity = '0';
             oxDiv.innerText = '';
+            wordDiv.innerText = ''; // 단어 초기화
+            wordDiv.style.opacity = '1'; // 표시 보장
             canSubmit = false;
             showQuestion();
         }
@@ -310,6 +316,8 @@
                 oxDiv.style.color = lastAnswerCorrect ? 'green' : 'red';
             } else {
                 oxDiv.innerText = '';
+                wordDiv.innerText = ''; // 첫 문제 초기화
+                wordDiv.style.opacity = '1';
             }
             const question = questions[currentQuestionIndex];
             showCountdown(question.word);
@@ -340,16 +348,22 @@
 
         function showWord(word, alignment) {
             wordDiv.style.textAlign = alignment;
+            wordDiv.style.opacity = '1';
             wordDiv.innerText = word;
-            setTimeout(() => {
-                wordDiv.innerText = '';
-                hintLeft.innerText = '';
-                hintCenter.innerText = '';
-                hintRight.innerText = '';
-                input.style.opacity = '1';
-                input.focus();
-                canSubmit = true;
-            }, 30);
+            console.log(`Displaying word: ${word}`); // 디버깅
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    wordDiv.innerText = '';
+                    wordDiv.style.opacity = '1';
+                    hintLeft.innerText = '';
+                    hintCenter.innerText = '';
+                    hintRight.innerText = '';
+                    input.style.opacity = '1';
+                    input.focus();
+                    canSubmit = true;
+                    console.log('Word cleared'); // 디버깅
+                }, 30);
+            });
         }
 
         input.addEventListener('keydown', (event) => {
