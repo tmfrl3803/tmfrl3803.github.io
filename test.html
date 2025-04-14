@@ -10,11 +10,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
             background-color: #f4f7fa;
-            padding: 20px;
+            padding: 20px 20px 60px;
+            justify-content: flex-start;
         }
         #start, #restart {
             padding: 12px 24px;
@@ -86,18 +86,41 @@
             visibility: visible;
             padding: 0 5px;
         }
+        #input-progress-container {
+            width: 90%;
+            max-width: 600px;
+            position: sticky;
+            top: 20px;
+            z-index: 50;
+            background-color: #f4f7fa;
+        }
+        #progress {
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            color: #555;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        #progress.prep {
+            color: #2ecc71;
+        }
         #input-container {
             display: flex;
             align-items: center;
-            width: 90%;
-            max-width: 600px;
+            width: 100%;
         }
-        #input {
+        #input-form {
             width: 70%;
             max-width: 450px;
+            margin-right: 10px;
+        }
+        #input {
+            width: 100%;
             padding: 10px;
             font-size: clamp(0.9rem, 2.5vw, 1rem);
-            margin-right: 10px;
             opacity: 0;
             transition: opacity 0.3s;
             border: 1px solid #d1d5db;
@@ -115,18 +138,6 @@
             line-height: 24px;
             text-align: center;
             color: #333;
-        }
-        #progress {
-            font-size: clamp(0.9rem, 2.5vw, 1rem);
-            padding: 8px 16px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            color: #555;
-            margin-top: 20px;
-        }
-        #progress.prep {
-            color: #2ecc71; /* 예비 문제 색상 */
         }
         #result {
             display: none;
@@ -176,17 +187,20 @@
         }
         @media (max-width: 600px) {
             body {
-                padding: 15px;
+                padding: 15px 15px 60px;
             }
             #start, #restart {
                 width: 90%;
                 max-width: 400px;
             }
+            #input-progress-container {
+                top: 10px;
+            }
             #input-container {
                 flex-direction: column;
                 align-items: center;
             }
-            #input {
+            #input-form {
                 width: 90%;
                 max-width: 400px;
                 margin-right: 0;
@@ -198,7 +212,6 @@
             #progress {
                 width: 90%;
                 max-width: 400px;
-                text-align: center;
             }
             .word-section {
                 font-size: clamp(1rem, 3vw, 1.2rem);
@@ -220,9 +233,14 @@
         <div class="word-section" id="word-center"></div>
         <div class="word-section" id="word-right"></div>
     </div>
-    <div id="input-container">
-        <input type="text" id="input" placeholder="단어 입력 후, enter">
-        <div id="ox"></div>
+    <div id="input-progress-container">
+        <div id="progress"></div>
+        <div id="input-container">
+            <form id="input-form">
+                <input type="text" id="input" placeholder="단어 입력 후, enter">
+            </form>
+            <div id="ox"></div>
+        </div>
     </div>
     <div id="result">
         <h2>테스트 결과</h2>
@@ -230,7 +248,6 @@
         <p id="interpretation"></p>
         <button id="restart">다시 시작</button>
     </div>
-    <div id="progress"></div>
 
     <script>
         const words = {
@@ -295,7 +312,7 @@
                     questions.push({ word, category, isPrep: false });
                 });
             });
-            // 셔플
+            // 셔플 (예비 문제 2개 고정)
             for (let i = questions.length - 1; i > 2; i--) {
                 const j = Math.floor(Math.random() * (i - 1)) + 2;
                 [questions[i], questions[j]] = [questions[j], questions[i]];
@@ -324,16 +341,30 @@
         const wordLeft = document.getElementById('word-left');
         const wordCenter = document.getElementById('word-center');
         const wordRight = document.getElementById('word-right');
+        const inputForm = document.getElementById('input-form');
         const input = document.getElementById('input');
         const oxDiv = document.getElementById('ox');
         const progressDiv = document.getElementById('progress');
         const resultDiv = document.getElementById('result');
         const chartDiv = document.getElementById('chart');
+        const inputProgressContainer = document.getElementById('input-progress-container');
         const interpretationDiv = document.getElementById('interpretation');
         const restartButton = document.getElementById('restart');
 
         startButton.addEventListener('click', startTest);
         restartButton.addEventListener('click', startTest);
+        inputForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            if (canSubmit) {
+                checkAnswer();
+            }
+        });
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && canSubmit) {
+                event.preventDefault(); // Enter로 submit 중복 방지
+                checkAnswer();
+            }
+        });
 
         function startTest() {
             questions = generateQuestions();
@@ -358,6 +389,7 @@
             wordCenter.style.opacity = '1';
             wordRight.style.opacity = '1';
             canSubmit = false;
+            inputProgressContainer.style.transform = 'translateY(0)';
             showQuestion();
         }
 
@@ -438,12 +470,6 @@
             });
         }
 
-        input.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && canSubmit) {
-                checkAnswer();
-            }
-        });
-
         function checkAnswer() {
             const userAnswer = input.value.trim();
             const correctAnswer = questions[currentQuestionIndex].word;
@@ -462,6 +488,7 @@
             countdownDiv.style.display = 'none';
             hintDiv.style.display = 'none';
             wordLeft.parentElement.style.display = 'none';
+            inputProgressContainer.style.transform = 'translateY(0)';
             resultDiv.style.display = 'block';
 
             let maxCategory = '';
@@ -502,6 +529,28 @@
 
             interpretationDiv.innerText = `당신이 가장 잘 맞춘 카테고리는 '${resultText}'입니다. 이는 당신이 ${resultText}에 대한 결핍을 느낄 수 있음을 시사합니다. (참고: 이 테스트는 재미용입니다.)`;
         }
+
+        // 키보드 호환: 뷰포트 조정
+        function adjustInputPosition() {
+            if (window.visualViewport) {
+                const viewport = window.visualViewport;
+                const adjust = () => {
+                    const offset = window.innerHeight - viewport.height;
+                    if (offset > 100) {
+                        inputProgressContainer.style.transform = `translateY(-${offset - 100}px)`;
+                    } else {
+                        inputProgressContainer.style.transform = 'translateY(0)';
+                    }
+                };
+                viewport.addEventListener('resize', adjust);
+                viewport.addEventListener('scroll', adjust);
+                input.addEventListener('focus', adjust);
+                input.addEventListener('blur', () => {
+                    inputProgressContainer.style.transform = 'translateY(0)';
+                });
+            }
+        }
+        adjustInputPosition();
     </script>
 </body>
 </html>
