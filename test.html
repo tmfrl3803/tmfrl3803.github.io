@@ -13,7 +13,7 @@
             min-height: 100vh;
             margin: 0;
             background-color: #f4f7fa;
-            padding: 20px 20px 60px;
+            padding: 20px 20px 150px; /* 키보드 공간 확보 */
             justify-content: flex-start;
         }
         #start, #restart {
@@ -89,10 +89,8 @@
         #input-progress-container {
             width: 90%;
             max-width: 600px;
-            position: sticky;
-            top: 20px;
-            z-index: 50;
-            background-color: #f4f7fa;
+            position: relative;
+            margin-top: 10px;
         }
         #progress {
             font-size: clamp(0.9rem, 2.5vw, 1rem);
@@ -187,14 +185,11 @@
         }
         @media (max-width: 600px) {
             body {
-                padding: 15px 15px 60px;
+                padding: 15px 15px 150px;
             }
             #start, #restart {
                 width: 90%;
                 max-width: 400px;
-            }
-            #input-progress-container {
-                top: 10px;
             }
             #input-container {
                 flex-direction: column;
@@ -236,8 +231,8 @@
     <div id="input-progress-container">
         <div id="progress"></div>
         <div id="input-container">
-            <form id="input-form">
-                <input type="text" id="input" placeholder="단어 입력 후, enter">
+            <form id="input-form" novalidate>
+                <input type="text" id="input" placeholder="단어 입력 후, enter 또는 완료" autocomplete="off">
             </form>
             <div id="ox"></div>
         </div>
@@ -285,7 +280,6 @@
 
         function generateQuestions() {
             const questions = [];
-            // 예비 문제: food 단어 2개
             const foodWords = words.food;
             const prepWords = [];
             while (prepWords.length < 2) {
@@ -296,7 +290,6 @@
                     questions.push({ word, category: 'food', isPrep: true });
                 }
             }
-            // 본 문제: 4개 주제 × 4문제
             const categories = ['relationship', 'success', 'money', 'health'];
             categories.forEach(category => {
                 const categoryWords = words[category];
@@ -312,7 +305,6 @@
                     questions.push({ word, category, isPrep: false });
                 });
             });
-            // 셔플 (예비 문제 2개 고정)
             for (let i = questions.length - 1; i > 2; i--) {
                 const j = Math.floor(Math.random() * (i - 1)) + 2;
                 [questions[i], questions[j]] = [questions[j], questions[i]];
@@ -361,7 +353,12 @@
         });
         input.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' && canSubmit) {
-                event.preventDefault(); // Enter로 submit 중복 방지
+                event.preventDefault();
+                checkAnswer();
+            }
+        });
+        input.addEventListener('blur', () => {
+            if (canSubmit && input.value.trim()) {
                 checkAnswer();
             }
         });
@@ -389,7 +386,6 @@
             wordCenter.style.opacity = '1';
             wordRight.style.opacity = '1';
             canSubmit = false;
-            inputProgressContainer.style.transform = 'translateY(0)';
             showQuestion();
         }
 
@@ -464,6 +460,7 @@
                     hintRight.innerText = '';
                     input.style.opacity = '1';
                     input.focus();
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     canSubmit = true;
                     console.log('Word cleared');
                 }, 30);
@@ -488,7 +485,6 @@
             countdownDiv.style.display = 'none';
             hintDiv.style.display = 'none';
             wordLeft.parentElement.style.display = 'none';
-            inputProgressContainer.style.transform = 'translateY(0)';
             resultDiv.style.display = 'block';
 
             let maxCategory = '';
@@ -529,28 +525,6 @@
 
             interpretationDiv.innerText = `당신이 가장 잘 맞춘 카테고리는 '${resultText}'입니다. 이는 당신이 ${resultText}에 대한 결핍을 느낄 수 있음을 시사합니다. (참고: 이 테스트는 재미용입니다.)`;
         }
-
-        // 키보드 호환: 뷰포트 조정
-        function adjustInputPosition() {
-            if (window.visualViewport) {
-                const viewport = window.visualViewport;
-                const adjust = () => {
-                    const offset = window.innerHeight - viewport.height;
-                    if (offset > 100) {
-                        inputProgressContainer.style.transform = `translateY(-${offset - 100}px)`;
-                    } else {
-                        inputProgressContainer.style.transform = 'translateY(0)';
-                    }
-                };
-                viewport.addEventListener('resize', adjust);
-                viewport.addEventListener('scroll', adjust);
-                input.addEventListener('focus', adjust);
-                input.addEventListener('blur', () => {
-                    inputProgressContainer.style.transform = 'translateY(0)';
-                });
-            }
-        }
-        adjustInputPosition();
     </script>
 </body>
 </html>
