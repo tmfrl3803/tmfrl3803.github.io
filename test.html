@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>심리 테스트</title>
     <style>
         body {
@@ -10,13 +10,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
             margin: 0;
             background-color: #f4f7fa;
-            padding: 20px 20px 150px;
+            padding: 15px;
             justify-content: flex-start;
-            overflow: hidden; /* 스크롤 방지 */
-            touch-action: pan-x pan-y; /* 줌 제스처 제한 */
+            overflow: hidden;
+            touch-action: none; /* 줌/스크롤 터치 차단 */
         }
         #start, #restart {
             padding: 12px 24px;
@@ -38,7 +37,7 @@
         #intro {
             font-size: clamp(1rem, 3vw, 1.1rem);
             text-align: center;
-            margin: 20px 0;
+            margin: 15px 0;
             color: #333;
             width: 90%;
             max-width: 600px;
@@ -46,11 +45,11 @@
         #countdown {
             font-size: clamp(2rem, 8vw, 2.5rem);
             text-align: center;
-            margin: 20px 0;
+            margin: 15px 0;
             color: #1e90ff;
             width: 90%;
             max-width: 600px;
-            font-weight: 600; /* 가독성 강화 */
+            font-weight: 600;
         }
         #hint {
             width: 90%;
@@ -75,7 +74,7 @@
             background-color: #ffffff;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            margin: 20px 0;
+            margin: 15px 0;
             padding-left: 10px;
             padding-right: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -188,7 +187,7 @@
         }
         @media (max-width: 600px) {
             body {
-                padding: 15px 15px 150px;
+                padding: 10px;
             }
             #start, #restart {
                 width: 90%;
@@ -366,13 +365,23 @@
             }
         });
 
-        // 스크롤 최상단 고정
-        function keepScrollAtTop() {
-            window.scrollTo(0, 0);
+        // 뷰포트 크기 맞춤
+        function adjustPageHeight() {
+            const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            document.body.style.height = `${viewportHeight}px`;
+            document.body.style.maxHeight = `${viewportHeight}px`;
         }
-        window.addEventListener('scroll', keepScrollAtTop);
-        window.addEventListener('resize', keepScrollAtTop);
-        input.addEventListener('focus', keepScrollAtTop);
+        adjustPageHeight();
+        window.addEventListener('resize', adjustPageHeight);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', adjustPageHeight);
+        }
+
+        // 줌 방지 (iOS 대응)
+        document.addEventListener('gesturestart', (e) => e.preventDefault());
+        document.addEventListener('touchmove', (e) => {
+            if (e.scale !== 1) e.preventDefault();
+        }, { passive: false });
 
         function startTest() {
             questions = generateQuestions();
@@ -397,7 +406,8 @@
             wordCenter.style.opacity = '1';
             wordRight.style.opacity = '1';
             canSubmit = false;
-            document.body.style.overflow = 'hidden'; // 테스트 중 스크롤 방지
+            document.body.style.overflow = 'hidden';
+            adjustPageHeight();
             showQuestion();
         }
 
@@ -428,7 +438,7 @@
                 wordCenter.style.opacity = '1';
                 wordRight.style.opacity = '1';
             }
-            keepScrollAtTop();
+            adjustPageHeight();
             const question = questions[currentQuestionIndex];
             showCountdown(question.word);
         }
@@ -444,12 +454,12 @@
 
             let count = 3;
             countdownDiv.innerText = count;
-            keepScrollAtTop();
+            adjustPageHeight();
             const interval = setInterval(() => {
                 count--;
                 if (count > 0) {
                     countdownDiv.innerText = count;
-                    keepScrollAtTop();
+                    adjustPageHeight();
                 } else {
                     clearInterval(interval);
                     countdownDiv.innerText = '';
@@ -476,7 +486,7 @@
                     input.style.opacity = '1';
                     input.focus();
                     canSubmit = true;
-                    keepScrollAtTop();
+                    adjustPageHeight();
                     console.log('Word cleared');
                 }, 30);
             });
@@ -491,6 +501,7 @@
                 correctAnswers[category]++;
             }
             currentQuestionIndex++;
+            adjustPageHeight();
             showQuestion();
         }
 
@@ -501,7 +512,9 @@
             hintDiv.style.display = 'none';
             wordLeft.parentElement.style.display = 'none';
             resultDiv.style.display = 'block';
-            document.body.style.overflow = 'auto'; // 결과 화면에서 스크롤 허용
+            document.body.style.height = 'auto'; // 결과 화면 스크롤 허용
+            document.body.style.maxHeight = 'none';
+            document.body.style.overflow = 'auto';
 
             let maxCategory = '';
             let maxCount = 0;
@@ -540,7 +553,6 @@
             });
 
             interpretationDiv.innerText = `당신이 가장 잘 맞춘 카테고리는 '${resultText}'입니다. 이는 당신이 ${resultText}에 대한 결핍을 느낄 수 있음을 시사합니다. (참고: 이 테스트는 재미용입니다.)`;
-            keepScrollAtTop();
         }
     </script>
 </body>
